@@ -14,13 +14,32 @@ Each exercise has a spec under `.avahi/specs/` — **read it first**:
 
 ## Getting started
 
+**Requires Node 20+.** No global installs or `sudo` needed — pick either option:
+
+**Option A — use the pinned pnpm 9 via `npx` (recommended):**
+
 ```bash
-pnpm install
-pnpm dev          # http://localhost:5173
-pnpm test         # Vitest, watch mode — green to start; you may add tests
-pnpm test:run     # Vitest, single run (what CI runs)
-pnpm type-check   # TypeScript strict — clean to start
-pnpm build        # Production build
+npx pnpm@9 install
+npx pnpm@9 dev        # http://localhost:5173
+```
+
+**Option B — use npm (simplest, if you'd rather not touch pnpm):**
+
+```bash
+npm install
+npm run dev           # http://localhost:5173
+```
+
+> Avoid `corepack enable` — it writes symlinks into your global Node `bin`, which fails without
+> `sudo` on system-wide Node installs. The two options above sidestep that entirely.
+
+Other scripts (prefix with `npx pnpm@9` or `npm run`):
+
+```bash
+test        # Vitest, watch mode — green to start; you may add tests
+test:run    # Vitest, single run (what CI runs)
+type-check  # TypeScript strict — clean to start
+build       # Production build
 ```
 
 > **Note on `pnpm lint`:** the scaffold's ESLint preset (`@antfu/eslint-config@2.27`) is not
