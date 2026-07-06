@@ -1,147 +1,110 @@
-# frontend-interview-exercises
-![Python](https://img.shields.io/badge/Python-grey?logo=python)
+# Frontend Interview Exercises
 
-frontend interview excercises
----
+Two self-contained exercises built on the Avahi SPA template. Run `pnpm dev` and open the home
+page (`/`) to pick one.
 
-## 📑 Table of Contents
+| # | Route | What it is | Your task |
+|---|-------|-----------|-----------|
+| 1 | `/cart-debug` | A finished shopping cart with reported defects | **Debug it.** Reproduce, triage, and fix the issues so behavior matches the spec. |
+| 2 | `/board` | A working Kanban board missing one feature | **Build it.** Implement drag-and-drop for cards (any approach). |
 
-- [Quick Start](#-quick-start)
-- [Architecture Overview](#-architecture-overview)
-- [Local Development](#-local-development)
-- [Deployment](#-deployment)
-- [Project Structure](#-project-structure)
-- [Environment Variables](#-environment-variables)
-- [Tech Stack](#-tech-stack)
-- [Project Metadata](#-project-metadata)
-- [Troubleshooting](#-troubleshooting)
+Each exercise has a spec under `.avahi/specs/` — **read it first**:
+- `001-cart-storefront/` — intended cart behavior (your triage reference)
+- `002-project-board/` — the drag-and-drop requirement and where it plugs in
 
----
-
-## 🚀 Quick Start
-
-### Prerequisites
-
-- [Python](https://www.python.org/) + [uv](https://docs.astral.sh/uv/)
-
-### Setup
-
-1. **Clone the repository**
-   ```bash
-   git clone https://github.com/avahi-org/frontend-interview-exercises.git
-   cd frontend-interview-exercises
-   ```
-
-2. **Install dependencies**
-   ```bash
-   uv sync
-   ```
-
-3. **Create environment file**
-   ```bash
-   cp .env.example .env
-   # Fill in your values
-   ```
-
-4. **Run locally**
-   ```bash
-   uv run python main.py
-   ```
-
----
-
-## 🏗 Architecture Overview
-
-<!-- Describe the system architecture and add a diagram if applicable -->
-
-### Core Components
-
-| Component | Description |
-|-----------|-------------|
-| <!-- Component --> | <!-- Description --> |
-
----
-
-## 💻 Local Development
-
-### Without Docker
+## Getting started
 
 ```bash
-uv sync
-uv run python main.py
+pnpm install
+pnpm dev          # http://localhost:5173
+pnpm test         # Vitest, watch mode — green to start; you may add tests
+pnpm test:run     # Vitest, single run (what CI runs)
+pnpm type-check   # TypeScript strict — clean to start
+pnpm build        # Production build
 ```
 
-### With Docker
+> **Note on `pnpm lint`:** the scaffold's ESLint preset (`@antfu/eslint-config@2.27`) is not
+> compatible with the installed ESLint 9.39 (its `react-hooks` plugin calls a removed API), so
+> `pnpm lint` does not currently run. Type-check and tests are the source of truth. Getting lint
+> working again (upgrading the antfu config) is a fair optional discussion.
+
+## How to submit
+
+1. Create a branch off `main` (e.g. `solution/<your-name>`) — `main` is protected.
+2. Do your work; keep commits reasonably scoped.
+3. Open a **pull request** into `main` and fill out the template.
+4. CI (type-check, tests, build) runs automatically and must be green.
+
+---
+
+## Stack
+
+| Concern | Tool |
+|---|---|
+| Framework | React 18 |
+| Bundler | Vite 5 |
+| Language | TypeScript (strict) |
+| Styling | Tailwind CSS + Shadcn |
+| Server state | TanStack Query |
+| Client state | Zustand |
+| Routing | React Router v6 |
+| Testing | Vitest + React Testing Library + MSW |
+| Linting | @antfu/eslint-config (see note above) |
+
+## Project structure
+
+```
+src/
+├── app/                     # Router, root layout, Home page
+├── features/                # Feature modules (co-located)
+│   ├── cart-debug/          # Exercise 1 — shopping cart
+│   │   ├── index.ts
+│   │   ├── CartDebug.tsx
+│   │   ├── CartPanel.tsx
+│   │   ├── ProductGrid.tsx
+│   │   ├── useProducts.ts        # TanStack Query hook
+│   │   ├── cart.store.ts         # Zustand store
+│   │   ├── CartDebug.test.tsx
+│   │   └── mocks/handlers.ts     # MSW handlers
+│   └── board/               # Exercise 2 — Kanban board
+│       ├── index.ts
+│       ├── Board.tsx
+│       ├── BoardColumn.tsx
+│       ├── BoardCardItem.tsx
+│       ├── board.store.ts        # moveCard() is the drag-and-drop seam
+│       └── Board.test.tsx
+├── shared/
+│   ├── components/ui/       # Shadcn components
+│   └── hooks/               # Shared hooks
+├── lib/
+│   ├── utils.ts             # cn() helper
+│   └── query-client.ts      # TanStack Query client
+└── test/
+    ├── setup.ts             # Vitest global setup
+    └── server.ts            # MSW server instance
+```
+
+## Feature co-location pattern
+
+Each feature owns everything it needs:
+
+```
+features/<name>/
+├── index.ts              # Public API — export only what pages need
+├── <Name>.tsx            # Root component
+├── use<Name>.ts          # Data fetching (TanStack Query)
+├── <name>.store.ts       # Client state (Zustand) — skip if useState is enough
+├── <Name>.test.tsx       # Tests
+└── mocks/handlers.ts     # MSW API mocks
+```
+
+Cross-feature imports are forbidden. Shared code goes in `src/shared/`.
+
+## Adding Shadcn components
 
 ```bash
-# Build
-docker build -t frontend-interview-exercises:dev .
-
-# Run
-docker run -it --rm -p 8080:8080 --env-file .env frontend-interview-exercises:dev
+npx shadcn@latest add <component>
 ```
 
----
-
-## 🚢 Deployment
-
-<!-- Deployments are typically automated via GitHub Actions on push to develop. -->
-
-### Deploy to Development
-
-```bash
-git push origin develop
-```
-
----
-
-## 🗂 Project Structure
-
-```
-frontend-interview-exercises/
-├── .github/
-│   └── workflows/       # CI/CD pipelines
-├── src/                 # Application source code
-├── main.py              # Entry point
-├── Dockerfile           # Production container
-├── pyproject.toml       # Dependencies
-└── README.md
-```
-
----
-
-## 🔑 Environment Variables
-
-| Variable | Required | Description |
-|----------|----------|-------------|
-| <!-- VAR_NAME --> | ✅ | <!-- Description --> |
-
-> ⚠️ Never commit `.env` files — they are gitignored by default.
-
----
-
-## 📦 Tech Stack
-
-| Component | Description |
-|-----------|-------------|
-| Python | Application logic and scripting |
-
----
-
-## 📋 Project Metadata
-
-**Project Type:** Saas Product
-
-### Team
-
-| Role | GitHub Username |
-|------|----------------|
-| Lead | @Solenasth |
-
----
-
-## 🐛 Troubleshooting
-
-| Issue | Solution |
-|-------|----------|
-| <!-- Issue --> | <!-- Solution --> |
+Components install into `src/shared/components/ui/`. The `components.json` file maps the install
+paths to the project structure.
