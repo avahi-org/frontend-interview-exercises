@@ -1,0 +1,85 @@
+name: Dependency Scan
+
+on:
+  pull_request:
+    paths:
+      - "requirements*.txt"
+      - "pyproject.toml"
+      - "setup.cfg"
+      - "setup.py"
+      - "package.json"
+      - "package-lock.json"
+      - "yarn.lock"
+
+jobs:
+  pip-audit:
+    name: Python dependency scan (pip-audit)
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install pip-audit
+        run: pip install pip-audit
+
+      - name: Run pip-audit
+        run: |
+          REQ_FLAGS=""
+          for f in $(ls requirements*.txt 2>/dev/null); do
+            REQ_FLAGS="$REQ_FLAGS -r $f"
+          done
+          if [ -n "$REQ_FLAGS" ]; then
+            pip-audit $REQ_FLAGS --format=json -o pip_audit_output.json || true
+          elif [ -f pyproject.toml ] || [ -f setup.cfg ] || [ -f setup.py ]; then
+            pip install -e . --quiet
+            pip-audit --format=json -o pip_audit_output.json || true
+          else
+            echo '{"dependencies": []}' > pip_audit_output.json
+          fi
+
+      - name: Check for vulnerabilities
+        run: |
+          VULNS=$(python -c "import json; d=json.load(open('pip_audit_output.json')); print(sum(len(p.get('vulns', [])) for p in d['dependencies']))")
+          echo "Vulnerabilities found: $VULNS"
+          if [ "$VULNS" -gt 0 ]; then
+            echo "FAIL: $VULNS vulnerable dependency/dependencies found"
+            exit 1
+          fi
+
+      - name: Post PR comment
+        if: failure() && github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const raw = fs.readFileSync('pip_audit_output.json', 'utf8');
+            const data = JSON.parse(raw);
+
+            const vulnerable = data.dependencies.filter(d => (d.vulns || []).length > 0);
+            const total = vulnerable.reduce((sum, d) => sum + (d.vulns || []).length, 0);
+
+            let body = [`## \u274C Python Dependency Scan Failed\n\n${total} vulnerability/vulnerabilities found.`, ''];
+
+            body.push('| Package | Version | Vulnerability | Fix |');
+            body.push('|---------|---------|--------------|-----|');
+            for (const dep of vulnerable) {
+              for (const v of (dep.vulns || [])) {
+                const fix = v.fix_versions?.join(', ') || 'No fix available';
+                body.push(`| ${dep.name} | ${dep.version} | ${v.id} | ${fix} |`);
+              }
+            }
+
+            await github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: body.join('\n'),
+            });

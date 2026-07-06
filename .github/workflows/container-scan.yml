@@ -1,0 +1,110 @@
+name: Container Scan
+
+on:
+  pull_request:
+    paths:
+      - "Dockerfile"
+      - "Dockerfile.*"
+      - ".dockerignore"
+
+jobs:
+  trivy:
+    name: Scan container image with Trivy
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Check for Dockerfile
+        id: check
+        run: |
+          if [ ! -f Dockerfile ]; then
+            echo "no_dockerfile=true" >> $GITHUB_OUTPUT
+            echo "No Dockerfile found — skipping container scan."
+            exit 0
+          fi
+
+      - name: Install Trivy
+        if: steps.check.outputs.no_dockerfile != 'true'
+        run: curl -sfL https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/install.sh | sh -s -- -b /usr/local/bin
+
+      - name: Build image
+        if: steps.check.outputs.no_dockerfile != 'true'
+        run: docker build -t scan-target:${{ github.sha }} .
+
+      - name: Run Trivy
+        if: steps.check.outputs.no_dockerfile != 'true'
+        id: trivy
+        run: trivy image --exit-code 0 --format json --output trivy_output.json scan-target:${{ github.sha }}
+
+      - name: Check for critical vulnerabilities
+        if: steps.check.outputs.no_dockerfile != 'true'
+        id: vuln_check
+        run: |
+          HIGH=$(jq '[.Results[]?.Vulnerabilities[]? | select(.Severity=="HIGH")] | length' trivy_output.json 2>/dev/null || echo 0)
+          CRITICAL=$(jq '[.Results[]?.Vulnerabilities[]? | select(.Severity=="CRITICAL")] | length' trivy_output.json 2>/dev/null || echo 0)
+          echo "Critical: $CRITICAL, High: $HIGH"
+          if [ "$((CRITICAL + HIGH))" -gt 0 ]; then
+            echo "has_high_or_above=true" >> $GITHUB_OUTPUT
+          fi
+          if [ "$CRITICAL" -gt 0 ]; then
+            echo "FAIL: $CRITICAL critical severity CVE(s) found"
+            exit 1
+          fi
+
+      - name: Post PR comment
+        if: always() && github.event_name == 'pull_request' && steps.check.outputs.no_dockerfile != 'true' && steps.vuln_check.outputs.has_high_or_above == 'true'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            let critical = 0, high = 0, medium = 0, low = 0;
+            const highCritVulns = [];
+            try {
+              const raw = JSON.parse(fs.readFileSync('trivy_output.json', 'utf8'));
+              for (const result of raw.Results || []) {
+                for (const v of result.Vulnerabilities || []) {
+                  if (v.Severity === 'CRITICAL') critical++;
+                  else if (v.Severity === 'HIGH') high++;
+                  else if (v.Severity === 'MEDIUM') medium++;
+                  else if (v.Severity === 'LOW') low++;
+                  if (v.Severity === 'CRITICAL' || v.Severity === 'HIGH') {
+                    highCritVulns.push(v);
+                  }
+                }
+              }
+            } catch (_) {}
+
+            const heading = critical > 0
+              ? `## \u274C Container Scan Failed\n\n${critical} critical severity CVE(s) found.`
+              : `## \u26A0\uFE0F Container Scan Warning\n\n${high} high severity CVE(s) found — no critical issues.`;
+
+            const summary = `| Critical | High | Medium | Low |\n|----------|------|--------|-----|\n| ${critical} | ${high} | ${medium} | ${low} |`;
+
+            let vulnTable = '';
+            if (highCritVulns.length > 0) {
+              const rows = highCritVulns.map(v =>
+                `| ${v.VulnerabilityID} | ${v.PkgName} | ${v.Severity} | ${v.InstalledVersion || '-'} | ${v.FixedVersion || 'no fix'} |`
+              ).join('\n');
+              vulnTable = [
+                '',
+                '<details>',
+                '<summary>Critical and High CVEs</summary>',
+                '',
+                '| CVE | Package | Severity | Installed | Fixed |',
+                '|-----|---------|----------|-----------|-------|',
+                rows,
+                '',
+                '</details>',
+              ].join('\n');
+            }
+
+            await github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: [heading, '', summary, vulnTable].join('\n'),
+            });

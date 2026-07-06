@@ -1,0 +1,106 @@
+name: IaC Scan
+
+on:
+  pull_request:
+    paths:
+      - "**/*.tf"
+      - "**/*.tfvars"
+      - "**/*.yaml"
+      - "**/*.yml"
+      - "cdk.json"
+      - "!.github/**"
+
+jobs:
+  checkov:
+    name: Scan IaC with Checkov
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
+
+      - name: Set up Python
+        uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065
+        with:
+          python-version: "3.13"
+
+      - name: Install Checkov
+        run: pip install checkov==3.2.529
+
+      - name: Run Checkov
+        id: checkov
+        run: |
+          HAS_TF=$(find . -name "*.tf" -not -path "./.git/*" | grep -q . && echo true || echo false)
+          HAS_CFN=$(grep -rl "^AWSTemplateFormatVersion:" --include="*.yaml" --include="*.yml" --include="*.json" . 2>/dev/null | grep -q . && echo true || echo false)
+          HAS_CDK=$(find . -name "cdk.json" -not -path "./.git/*" | grep -q . && echo true || echo false)
+          if [ "$HAS_TF" = "false" ] && [ "$HAS_CFN" = "false" ] && [ "$HAS_CDK" = "false" ]; then
+            echo "no_iac_files=true" >> $GITHUB_OUTPUT
+            exit 0
+          fi
+          checkov -d . --framework terraform,cloudformation,cdk --soft-fail --download-external-modules true 2>&1 | tee checkov_output.txt
+
+      - name: Check pass rate
+        if: steps.checkov.outputs.no_iac_files != 'true'
+        run: |
+          PASSED=$(grep -o 'Passed checks: [0-9]*' checkov_output.txt | grep -o '[0-9]*' | awk '{s+=$1} END {print s+0}')
+          FAILED=$(grep -o 'Failed checks: [0-9]*' checkov_output.txt | grep -o '[0-9]*' | awk '{s+=$1} END {print s+0}')
+          TOTAL=$((PASSED + FAILED))
+          if [ "$TOTAL" -eq 0 ]; then
+            echo "No checks ran"
+            exit 0
+          fi
+          RATE=$((PASSED * 100 / TOTAL))
+          echo "Pass rate: ${RATE}% (${PASSED}/${TOTAL}, threshold: 30%)"
+          if [ "$RATE" -lt 30 ]; then
+            echo "FAIL: pass rate ${RATE}% is below the 30% threshold"
+            exit 1
+          fi
+
+      - name: Post PR comment
+        if: always() && github.event_name == 'pull_request' && steps.checkov.outputs.no_iac_files != 'true'
+        uses: actions/github-script@f28e40c7f34bde8b3046d885e986cb6290c5673b
+        with:
+          script: |
+            const fs = require('fs');
+            const output = fs.readFileSync('checkov_output.txt', 'utf8');
+
+            const matches = [...output.matchAll(/Passed checks: (\d+), Failed checks: (\d+)/g)];
+            let passed = 0, failed = 0, rate = 0;
+            if (matches.length > 0) {
+              passed = matches.reduce((s, m) => s + parseInt(m[1]), 0);
+              failed = matches.reduce((s, m) => s + parseInt(m[2]), 0);
+              const total = passed + failed;
+              rate = total > 0 ? Math.round(passed * 100 / total) : 0;
+            }
+            const summary = `| Passed | Failed | Pass Rate | Threshold |\n|--------|--------|-----------|-----------|\n| ${passed} | ${failed} | ${rate}% | 30% |`;
+            const heading = rate >= 30
+              ? `## \u2705 IaC Scan Passed\n\nPass rate ${rate}% meets the **30%** threshold.`
+              : `## \u274C IaC Scan Failed\n\nPass rate ${rate}% is below the **30%** threshold.`;
+
+            const failedIdx = output.indexOf('\tFAILED for resource:');
+            let failedOutput = failedIdx !== -1 ? output.substring(failedIdx) : 'No failed checks.';
+            if (failedOutput.length > 60000) {
+              failedOutput = failedOutput.substring(0, 60000) + '\n\n... (truncated)';
+            }
+
+            await github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: [
+                heading,
+                '',
+                summary,
+                '',
+                '<details>',
+                '<summary>Failed checks</summary>',
+                '',
+                '```',
+                failedOutput,
+                '```',
+                '',
+                '</details>',
+              ].join('\n'),
+            });
