@@ -1,0 +1,38 @@
+name: Package candidate zip
+
+# On every merge/push to main, rebuild the clean candidate snapshot and
+# publish it as the "latest" GitHub Release asset. git archive only includes
+# tracked files, so the gitignored interviewer answer key is never bundled.
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: write
+
+concurrency:
+  group: package-release
+  cancel-in-progress: true
+
+jobs:
+  package:
+    name: Build and publish snapshot
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Build snapshot zip
+        run: git archive --format=zip --prefix=frontend-interview-exercises/ -o frontend-interview-exercises.zip HEAD
+
+      - name: Publish / update "latest" release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          if gh release view latest >/dev/null 2>&1; then
+            gh release upload latest frontend-interview-exercises.zip --clobber
+          else
+            gh release create latest frontend-interview-exercises.zip \
+              --title "Latest candidate snapshot" \
+              --notes "Auto-built from main. Interviewer answer key excluded."
+          fi
