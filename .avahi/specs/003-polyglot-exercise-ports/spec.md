@@ -1,9 +1,13 @@
 # Feature: Polyglot Exercise Ports (Vue + Angular)
 
 **Date:** 2026-07-13
-**Branch:** main
+**Branch:** dev
 **Status:** Draft
 **Tracking epic:** [avahi-org/frontend-interview-exercises#5](https://github.com/avahi-org/frontend-interview-exercises/issues/5)
+
+All work for this epic lands on the `dev` integration branch first (PRs target `dev`, not
+`main`). `main` is untouched until [#13](https://github.com/avahi-org/frontend-interview-exercises/issues/13)
+(the final `dev` → `main` merge) closes.
 
 ---
 
@@ -89,14 +93,18 @@ UI (today's `Home.tsx`) re-implemented natively per framework (`Home.vue`, `Home
 - **Versioning: independent per-package.** Each package (`packages/react`, `packages/vue`,
   `packages/angular`) has its own version number and release cadence; they are not bumped
   together.
+- **Lint posture for new packages: working lint from day one** (tracked in
+  [#12](https://github.com/avahi-org/frontend-interview-exercises/issues/12)). Unlike
+  `packages/react` (intentionally-broken lint due to an antfu-config/ESLint-9 incompatibility,
+  with type-check + tests as the real source of truth), `packages/vue` and `packages/angular` are
+  fresh scaffolds with no reason to inherit that legacy issue. **Re-evaluation trigger:** once
+  both port exercises (#8 Vue, #9 Angular) have landed, check whether a working linter collides
+  with any planted cart-debug defect (auto-flagging or auto-fixing it away); if so, relax that
+  package to React's posture.
 
 ## Open questions
 
-- **Lint posture for new packages:** the React package currently has intentionally-broken lint
-  (antfu config vs. ESLint 9 incompatibility, documented in its README) with type-check + tests
-  as the actual source of truth. Default assumption for this epic: Vue and Angular are fresh
-  scaffolds and should ship with **working lint from day one** (no reason to inherit a legacy
-  incompatibility that doesn't exist yet in a new package) — flagged here in case that's wrong.
+None outstanding — all resolved (see Decisions above and #5 for links to each ticket).
 
 ---
 
