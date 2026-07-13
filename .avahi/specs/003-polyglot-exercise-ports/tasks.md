@@ -26,8 +26,10 @@ one is verified green — each phase isolates a different source of risk. -->
 
 ## Phase 2 — CI and release workflow, react-only verification — [#7](https://github.com/avahi-org/frontend-interview-exercises/issues/7)
 - [ ] Update `ci.yml` to a matrix over `packages/*`, scoped to `react` for now
-- [ ] Update `package.yml` to build a per-stack zip via `git archive HEAD:packages/<stack>`,
-      scoped to `react` for now
+- [ ] Update `package.yml` to build a per-stack zip, scoped to `react` for now — **must also copy
+      in `.avahi/specs/001-cart-storefront` and `002-project-board`** (see plan.md's "Release
+      changes" section; a plain `git archive HEAD:packages/<stack>` alone drops them since they
+      live at the repo root, not inside the package)
 - [ ] Push a throwaway branch/PR to confirm both workflows pass and the release asset is correct
 - [ ] Confirm the zip extracts and runs standalone (fresh clone-like test: unzip to a temp dir,
       `pnpm install`, `pnpm dev`/`build`)

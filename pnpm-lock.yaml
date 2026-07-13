@@ -6,7 +6,9 @@ settings:
 
 importers:
 
-  .:
+  .: {}
+
+  packages/react:
     dependencies:
       '@radix-ui/react-slot':
         specifier: ^1.1.0

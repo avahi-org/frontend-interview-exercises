@@ -98,15 +98,28 @@ every package stays independently runnable via `pnpm --filter <pkg> <script>`.
 
 ## Release changes (`package.yml`)
 
-- Replace the single `git archive` step with three steps, one per stack:
+- **Gap found during Phase 1 (#6):** archiving only `HEAD:packages/<stack>` would silently drop
+  `.avahi/specs/001-cart-storefront/` and `002-project-board/` — they intentionally stay at the
+  repo root as the single shared, edited-once contract, but every package's README tells the
+  candidate to read them first. A naive per-package archive breaks that.
+- Fix: assemble each zip in two parts so it's genuinely self-contained on extraction, while specs
+  are still authored exactly once at the root:
+  ```bash
+  # 1. the package itself, at the zip's top level
+  mkdir -p build/<name> && git archive HEAD:packages/<stack> | tar -x -C build/<name>
+  # 2. the shared specs, copied in (not moved/duplicated in source — root stays canonical)
+  mkdir -p build/<name>/.avahi/specs
+  cp -r .avahi/specs/001-cart-storefront build/<name>/.avahi/specs/
+  cp -r .avahi/specs/002-project-board build/<name>/.avahi/specs/
+  (cd build && zip -r ../frontend-interview-exercises-<stack>.zip <name>)
   ```
-  git archive --format=zip --prefix=frontend-interview-exercises-<stack>/ \
-    -o frontend-interview-exercises-<stack>.zip HEAD:packages/<stack>
-  ```
+  (`.avahi/answer-keys/` is gitignored/untracked, so neither `git archive` nor a plain `cp` from a
+  clean checkout of tracked specs pulls it in — no risk of leaking it into a candidate zip.)
 - Upload all three as separate assets on the existing rolling "latest" release (same
   clobber-on-update behavior as today, just three assets instead of one).
 - Confirm each package's own README is self-contained enough to work when the zip is extracted
-  standalone (no implicit dependency on root-level files that won't be present).
+  standalone (no implicit dependency on root-level files that won't be present, other than the
+  `.avahi/specs/` copy step above).
 
 ## Data shape
 
