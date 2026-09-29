@@ -126,6 +126,7 @@ npx shadcn@latest add <component>
 Components install into `src/shared/components/ui/`. The `components.json` file maps the install
 paths to the project structure.
 
+<!-- DEV-ONLY:START -->
 ## Candidate zip contents policy
 
 The candidate deliverable is built by `.github/workflows/package.yml` via `git archive`, which
@@ -139,6 +140,11 @@ and fails the build if anything on it leaks into the built zip (see #18).
 **When adding a new internal-only file, add it to `.gitattributes`'s denylist in the same
 change** — nothing else keeps this in sync.
 
-> This section is developer-facing and shouldn't really be here — `README.md` currently ships
-> wholesale to candidates with no dev/candidate split yet (see #51). Once #51 lands, this section
-> moves to the developer-facing variant only.
+## README dev/candidate split
+
+This file is the single source of truth for both developer and candidate documentation — there's
+no separate candidate README to keep in sync. Sections wrapped in `<!-- DEV-ONLY:START -->` /
+`<!-- DEV-ONLY:END -->` markers (like this one) are stripped out by `package.yml` when building the
+candidate zip (see #51); everything outside those markers ships to candidates as-is. When adding
+dev-only content, wrap it in a new marker pair rather than creating a separate file.
+<!-- DEV-ONLY:END -->

@@ -75,7 +75,13 @@ This repo uses a deliberate label taxonomy (see #17) instead of ad hoc labeling.
 
 **When adding a new internal-only file (agent tooling, internal CI, dev-only config), add it to `.gitattributes`'s denylist in the same change.** Nothing else keeps this in sync — a forgotten entry ships silently until the next `package.yml` run catches it.
 
-This policy is also documented in `README.md`, since there's no dev-only doc yet — `README.md` still ships wholesale to candidates today, so candidates can currently see this section until the dev/candidate split lands (see #51). Once #51 lands, move this content into the developer-facing variant only.
+This policy is also documented in `README.md`, inside a dev-only marked section (see below) — resolved by #51, no longer candidate-visible.
+
+## README dev/candidate split
+
+`README.md` is the single source of truth for both developer and candidate documentation — there's no separate candidate README file to keep in sync (see #51). Wrap dev-only content in `<!-- DEV-ONLY:START -->` / `<!-- DEV-ONLY:END -->` markers; `package.yml`'s archive-build step strips everything between paired markers before publishing the candidate zip. Everything outside those markers ships to candidates as-is.
+
+**When adding dev-only content to `README.md`, wrap it in a new marker pair — don't create a separate file.** The candidate-zip CI job (`package.yml`) fails the build if a `DEV-ONLY` marker survives stripping, as a regression guard.
 
 ## Available commands
 
