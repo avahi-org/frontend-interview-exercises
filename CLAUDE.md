@@ -50,6 +50,7 @@ Before implementing anything non-trivial, create a spec. Specs live in `.avahi/s
 ## Issue-first workflow
 
 File a GitHub issue before opening a PR, and reference it in the PR body/title (e.g. `#42`). A CI check (`Verify Linked Issue`, see #44) enforces this — PRs without an issue reference fail the check.
+
 ## Issue/PR labels
 
 This repo uses a deliberate label taxonomy (see #17) instead of ad hoc labeling. When filing or triaging an issue, apply the labels that fit:
