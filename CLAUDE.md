@@ -47,6 +47,24 @@ Before implementing anything non-trivial, create a spec. Specs live in `.avahi/s
 
 **Always read the relevant spec before writing code.** If a spec does not exist for what you are about to build, create one first and confirm requirements before proceeding.
 
+## Issue/PR labels
+
+This repo uses a deliberate label taxonomy (see #17) instead of ad hoc labeling. When filing or triaging an issue, apply the labels that fit:
+
+| Label | Covers |
+|-------|--------|
+| `exercise` | Content specific to one candidate exercise — scaffold, spec, answer key, scope/constraint decisions, reference implementations |
+| `infra` | Cross-cutting repo/platform engineering not tied to one exercise — CI, release, build, lint, deps, distribution |
+| `meta` | Repo process/policy, non-code |
+| `interviewer-only` | Deliverable is interviewer-facing (answer key, grading rubric) — must never ship in the candidate zip |
+| `icebox` | Deprioritized, parked — may be revisited later. No fixed revisit cadence; only reconsidered when explicitly reprioritized |
+| `wontfix` | Permanent no — distinct from `icebox`, do not conflate the two |
+| `bug` | Real defects in repo code/tooling only |
+
+**Convention, not a label:** intentional planted defects inside exercise apps (e.g. `cart-debug`) are exercise content, not bugs — never tag them `bug`.
+
+`interviewer-only` is opt-in: absence of the label means candidate-facing/neutral, no second label needed.
+
 ## Available commands
 
 | Command | What it does |
