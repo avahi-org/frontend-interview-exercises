@@ -47,12 +47,10 @@ build       # Production build
 > `pnpm lint` does not currently run. Type-check and tests are the source of truth. Getting lint
 > working again (upgrading the antfu config) is a fair optional discussion.
 
-## How to submit
+## What happens next
 
-1. Create a branch off `main` (e.g. `solution/<your-name>`) — `main` is protected.
-2. Do your work; keep commits reasonably scoped.
-3. Open a **pull request** into `main` and fill out the template.
-4. CI (type-check, tests, build) runs automatically and must be green.
+There's nothing to submit — no branch, no PR, no `git push`. When time's up, you'll walk through
+your solution live with your interviewer directly from what's running locally.
 
 ---
 
