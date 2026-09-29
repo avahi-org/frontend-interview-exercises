@@ -9,7 +9,6 @@ The feature is already built. Your job is to make its behavior match `spec.md`.
 - [ ] Form a hypothesis about the root cause; narrow it to a file/function
 - [ ] Apply a minimal fix
 - [ ] Verify the fix and confirm you didn't break a passing behavior
-- [ ] (Bonus) Add a test that would have caught it
 
 ## Areas to exercise while reproducing
 - [ ] Category filtering
