@@ -1,0 +1,16 @@
+# Candidate zip exclusion policy (see #18).
+#
+# Deny-list via `git archive`'s `export-ignore` attribute: paths here are
+# Claude-Code / repo-tooling internals that are meaningless or confusing to a
+# candidate. Everything else ships by default — when adding a new internal-only
+# path, add it here explicitly rather than assuming it's excluded.
+
+CLAUDE.md export-ignore
+.claude/ export-ignore
+.avahi/specs/templates/ export-ignore
+.pre-commit-config.yaml export-ignore
+.github/workflows/container-scan.yml export-ignore
+.github/workflows/iac-scan.yml export-ignore
+.github/workflows/secret-scan.yml export-ignore
+.github/workflows/package.yml export-ignore
+.github/workflows/verify-linked-issue.yml export-ignore

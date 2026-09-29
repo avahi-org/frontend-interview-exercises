@@ -127,3 +127,20 @@ npx shadcn@latest add <component>
 
 Components install into `src/shared/components/ui/`. The `components.json` file maps the install
 paths to the project structure.
+
+## Candidate zip contents policy
+
+The candidate deliverable is built by `.github/workflows/package.yml` via `git archive`, which
+ships every *tracked* file by default. `.gitattributes` maintains a denylist (`export-ignore`) of
+internal-only paths that must never reach a candidate: `CLAUDE.md`, `.claude/`,
+`.avahi/specs/templates/`, `.pre-commit-config.yaml`, and internal-only CI workflows
+(`container-scan.yml`, `iac-scan.yml`, `secret-scan.yml`, `package.yml`,
+`verify-linked-issue.yml`). A CI step in `package.yml` re-derives this list from `.gitattributes`
+and fails the build if anything on it leaks into the built zip (see #18).
+
+**When adding a new internal-only file, add it to `.gitattributes`'s denylist in the same
+change** — nothing else keeps this in sync.
+
+> This section is developer-facing and shouldn't really be here — `README.md` currently ships
+> wholesale to candidates with no dev/candidate split yet (see #51). Once #51 lands, this section
+> moves to the developer-facing variant only.

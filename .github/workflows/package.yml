@@ -25,6 +25,27 @@ jobs:
       - name: Build snapshot zip
         run: git archive --format=zip --prefix=frontend-interview-exercises/ -o frontend-interview-exercises.zip HEAD
 
+      # Regression guard for #18: the denylist lives in .gitattributes
+      # (export-ignore); this re-derives it and fails the build if anything
+      # on it leaked into the archive, instead of relying on export-ignore
+      # silently doing the right thing forever.
+      - name: Verify no internal-only paths leaked into the zip
+        run: |
+          set -euo pipefail
+          zip_contents=$(unzip -Z1 frontend-interview-exercises.zip)
+          failed=0
+          while IFS= read -r path; do
+            [ -z "$path" ] && continue
+            if echo "$zip_contents" | grep -qF "$path"; then
+              echo "::error::Denylisted path leaked into candidate zip: $path"
+              failed=1
+            fi
+          done < <(grep -E 'export-ignore\s*$' .gitattributes | awk '{print $1}')
+          if [ "$failed" -eq 1 ]; then
+            exit 1
+          fi
+          echo "OK: no denylisted paths found in candidate zip"
+
       - name: Publish / update "latest" release
         env:
           GH_TOKEN: ${{ github.token }}
