@@ -1,31 +1,19 @@
 <!--
-  Thanks for your submission! Please summarize your work below.
-  CI (type-check, tests, build) must be green before this can merge.
+  Internal engineering PR. This repo follows an issue-first workflow (see
+  CLAUDE.md) — reference the issue this resolves, not just what changed.
 -->
-
-## Which exercise?
-
-- [ ] Exercise 1 — Cart debug (`/cart-debug`)
-- [ ] Exercise 2 — Project board drag-and-drop (`/board`)
 
 ## Summary
 
-<!-- What did you change and why? -->
-
-## Exercise 1 (Cart) — bugs found
-
-<!-- List each defect you found: symptom, root cause, and the fix. -->
-
-## Exercise 2 (Board) — approach
-
-<!-- If you implemented drag-and-drop: which approach/library and why? Any trade-offs? -->
+<!-- What changed and why? e.g. "Resolves #NN" -->
 
 ## Notes for the reviewer
 
-<!-- Anything you'd flag, ran out of time on, or would do differently with more time. -->
+<!-- Trade-offs made, anything you'd flag, follow-ups spun out into other issues. -->
 
 ## Checklist
 
+- [ ] References an issue (`Resolves #NN` / `Closes #NN` / `Fixes #NN`)
 - [ ] `pnpm type-check` passes
 - [ ] `pnpm test:run` passes
 - [ ] `pnpm build` succeeds
