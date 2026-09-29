@@ -47,6 +47,10 @@ Before implementing anything non-trivial, create a spec. Specs live in `.avahi/s
 
 **Always read the relevant spec before writing code.** If a spec does not exist for what you are about to build, create one first and confirm requirements before proceeding.
 
+## Issue-first workflow
+
+File a GitHub issue before opening a PR, and reference it in the PR body/title (e.g. `#42`). A CI check (`Verify Linked Issue`, see #44) enforces this — PRs without an issue reference fail the check.
+
 ## Available commands
 
 | Command | What it does |
