@@ -69,6 +69,14 @@ This repo uses a deliberate label taxonomy (see #17) instead of ad hoc labeling.
 
 `interviewer-only` is opt-in: absence of the label means candidate-facing/neutral, no second label needed.
 
+## Candidate zip contents policy
+
+`package.yml` builds the candidate deliverable via `git archive`, which ships every *tracked* file by default. `.gitattributes` maintains a denylist (`export-ignore`) of internal-only paths that must never reach a candidate: `CLAUDE.md`, `.claude/`, `.avahi/specs/templates/`, `.pre-commit-config.yaml`, and internal-only CI workflows (`container-scan.yml`, `iac-scan.yml`, `secret-scan.yml`, `package.yml`, `verify-linked-issue.yml`). A CI step in `package.yml` re-derives this list and fails the build if anything on it leaks into the built zip (see #18).
+
+**When adding a new internal-only file (agent tooling, internal CI, dev-only config), add it to `.gitattributes`'s denylist in the same change.** Nothing else keeps this in sync — a forgotten entry ships silently until the next `package.yml` run catches it.
+
+This policy is also documented in `README.md`, since there's no dev-only doc yet — `README.md` still ships wholesale to candidates today, so candidates can currently see this section until the dev/candidate split lands (see #51). Once #51 lands, move this content into the developer-facing variant only.
+
 ## Available commands
 
 | Command | What it does |
