@@ -14,3 +14,4 @@ CLAUDE.md export-ignore
 .github/workflows/secret-scan.yml export-ignore
 .github/workflows/package.yml export-ignore
 .github/workflows/verify-linked-issue.yml export-ignore
+.github/pull_request_template.md export-ignore
