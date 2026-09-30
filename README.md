@@ -132,8 +132,8 @@ paths to the project structure.
 The candidate deliverable is built by `.github/workflows/package.yml` via `git archive`, which
 ships every *tracked* file by default. `.gitattributes` maintains a denylist (`export-ignore`) of
 internal-only paths that must never reach a candidate: `CLAUDE.md`, `.claude/`,
-`.avahi/specs/templates/`, `.pre-commit-config.yaml`, and internal-only CI workflows
-(`container-scan.yml`, `iac-scan.yml`, `secret-scan.yml`, `package.yml`,
+`.avahi/specs/templates/`, `.pre-commit-config.yaml`, `.github/pull_request_template.md`, and
+internal-only CI workflows (`container-scan.yml`, `iac-scan.yml`, `secret-scan.yml`, `package.yml`,
 `verify-linked-issue.yml`). A CI step in `package.yml` re-derives this list from `.gitattributes`
 and fails the build if anything on it leaks into the built zip (see #18).
 
