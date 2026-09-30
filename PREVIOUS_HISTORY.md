@@ -28,6 +28,7 @@ now links to that PR's anchor in this file instead (e.g. `PREVIOUS_HISTORY.md#pr
 - [PR #53 — docs: drop redundant bonus-test step from cart-debug spec](#pr-53)
 - [PR #54 — docs+ci: split README into dev/candidate content via DEV-ONLY markers](#pr-54)
 - [PR #57 — ci: exclude pull_request_template.md from the candidate zip](#pr-57)
+- [PR #67 — docs: add PREVIOUS_HISTORY.md capturing PR content for the private-repo migration](#pr-67)
 
 ---
 
@@ -433,5 +434,30 @@ Closes #56.
 
 ## Test plan
 - [x] Docs/config-only change, no app code affected
+
+---
+
+<a id="pr-67"></a>
+## PR #67 — docs: add PREVIOUS_HISTORY.md capturing PR content for the private-repo migration
+
+- **State:** closed (merged)
+- **Opened:** 2026-09-30
+- **Merged:** 2026-09-30
+- **Merge commit:** `c1433ff529100a0061f3b2a96093d418ec66bdc1`
+- **Branch:** `meta/61-previous-history-doc` → `main`
+- **Labels:** meta
+
+### Description
+
+## Summary
+Part of #59 (epic). Resolves #61.
+
+PRs can't be recreated as real PR objects in the new private repo (`avahi-org/frontend-interview-exercises-internal`) — no live branches/diffs remain for the merged ones. Adds `PREVIOUS_HISTORY.md` capturing all 14 PRs' content (title, description, comments, merge commit SHA, branch names, labels) verbatim, so nothing is silently lost once the old repo's history is destructively deleted (#65).
+
+Explicitly an abundance-of-caution artifact — not expected to actually be needed. Documented its existence in `CLAUDE.md`. Also gitignores `.migration-scratch/`, the local working data used to generate this doc (issue/PR/comment dumps) and drive the rest of the migration.
+
+## Test plan
+- [x] Spot-checked several entries (including PR #15, the historical `chore/sync-workflows` conflict) against the live source data for accuracy
+- [x] Docs-only change, no app code affected
 
 ---
