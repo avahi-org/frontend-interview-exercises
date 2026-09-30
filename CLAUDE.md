@@ -83,6 +83,10 @@ This policy is also documented in `README.md`, inside a dev-only marked section 
 
 **When adding dev-only content to `README.md`, wrap it in a new marker pair — don't create a separate file.** The candidate-zip CI job (`package.yml`) fails the build if a `DEV-ONLY` marker survives stripping, as a regression guard.
 
+## Migration to a private repo (epic #59)
+
+This repo is mid-migration to a new private repo (`avahi-org/frontend-interview-exercises-internal`), after which this repo's content/history gets destructively wiped and repurposed as the candidate-zip delivery target. See `PREVIOUS_HISTORY.md` for this repo's pull request history, preserved there because PRs can't be recreated as real PR objects in the new repo (no live branches/diffs remain for the merged ones) — an abundance-of-caution artifact, not expected to actually be needed.
+
 ## Available commands
 
 | Command | What it does |

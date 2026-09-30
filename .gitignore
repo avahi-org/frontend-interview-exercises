@@ -22,3 +22,6 @@ secrets/
 
 # Interviewer-only material — never commit to the candidate repo
 .avahi/answer-keys/
+
+# Local scratch data for the private-repo migration (epic #59) — never commit
+.migration-scratch/
