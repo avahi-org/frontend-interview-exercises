@@ -52,4 +52,4 @@ export const productsQueryKey = ['products'] as const
 - [x] Catalog renders after load.
 - [x] Adding a product places it in the cart.
 - Tests intentionally assert only correct behavior so the suite passes; finding the defects is the
-  exercise. Writing a failing test that pins a defect is a great move.
+  exercise.
